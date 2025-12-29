@@ -1,0 +1,21 @@
+# Secrets - THIS IS THE MOST IMPORTANT FOR POSTGRES
+.env
+
+# Environments
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Database backups/logs
+*.sql
+*.log
+*.db
+
+# VS Code
+.vscode/
+
+
+
