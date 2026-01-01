@@ -39,12 +39,13 @@ class UserCreate(Base):
     hashed_password = Column (String, nullable=False)
     is_active = Column (Boolean, default=False)
     is_staff = Column (Boolean, default=False)
+    loans = relationship('LoanApplication',back_populates='UserCreate')
 
 class LoanApplication(Base):
     __tablename__ = 'LoanRecords'
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column (Integer, ForeignKey('user.id'), nullable = False, index=True)
+    user_id = Column (Integer, ForeignKey('User.id'), nullable = False, index=True)
     age = Column (Integer, index=True, nullable=False)
     annual_Income = Column (String, index=True, nullable=False)
     loan_Amount = Column(Integer, index=True, nullable=False)
@@ -53,9 +54,10 @@ class LoanApplication(Base):
     education_Level = Column (SAEnum(EducationLevel), nullable=False, index=True)
     type_of_Employment = Column (SAEnum(type_of_Employment), nullable=False, index=True)
     marital_Status = Column (SAEnum(marital_Status), nullable=False, index=True)
-    has_Dependents = Column (Boolean, Index=True, nullable=False)
+    has_Dependents = Column (Boolean, index=True, nullable=False)
     purpose_of_Loan = Column (SAEnum(purpose_of_Loan), nullable=False, index=True)
-    has_Guarantor = Column(Boolean, Index=True, nullable=False)
+    has_Guarantor = Column(Boolean, index=True, nullable=False)
+    users = relationship('UserCreate',back_populates='LoanApplication')
 
 class LoanPredictionResult(Base):
     __table_name___ = 'LoanPredictionResult'

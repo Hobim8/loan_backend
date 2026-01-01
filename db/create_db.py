@@ -1,5 +1,5 @@
 from db.session import Base, engine
-import db.models 
+import db.models
 
 def init_db():
     print('...connecting to database')
