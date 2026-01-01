@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field 
 from typing import Optional 
+from enum import Enum 
 
 class LoanApplication(BaseModel):
     age: int = Field(..., description="Applicant's age in years")
@@ -16,12 +17,36 @@ class LoanApplication(BaseModel):
     has_Dependents: bool = Field(..., description='Whether the applicant has dependents')
     purpose_of_Loan: str = Field(..., description='Purpose for which the loan is requested')
     has_Guarantor: bool = Field(..., description='Whether the applicant has a guarantor for the loan')
-    
+
+class education_Level(str, Enum):
+    BACHELORS = "bachelor's"
+    HIGH_SCHOOL = "high_school"
+    MASTERS = "master's"
+    PHD ="phd"
+
+
+class type_of_Employment(str, Enum):
+    BACHELORS = "bachelor's"
+    HIGH_SCHOOL = "high_school"
+    MASTERS = "master's"
+    PHD ="phd"
+
+class marital_Status(str, Enum):
+    BACHELORS = "bachelor's"
+    HIGH_SCHOOL = "high_school"
+    MASTERS = "master's"
+    PHD ="phd"
+
+
+class purpose_of_Loan(str, Enum):
+    BACHELORS = "bachelor's"
+    HIGH_SCHOOL = "high_school"
+    MASTERS = "master's"
+    PHD ="phd"
 
 
 
-
-class LoanPredictionResponse(BaseModel):
+class LoanPredictionResult(BaseModel):
     probability_of_default: float = Field(..., description='Probability that the applicant will default on the loan')
     prediction: bool = Field(..., description='Will default: True or False')
     Risk_level: str = Field(..., description='Risk level of the loan application (e.g., Low, Medium, High)')
