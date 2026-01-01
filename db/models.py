@@ -35,7 +35,7 @@ class UserCreate(Base):
 
     id = Column (Integer, primary_key=True, index=True)
     username = Column  (String, unique=True, nullable=False, index=True)
-    email = Column (String, unqiue=True, nullable=False, Index=True)
+    email = Column (String, unique=True, nullable=False, index=True)
     hashed_password = Column (String, nullable=False)
     is_active = Column (Boolean, default=False)
     is_staff = Column (Boolean, default=False)
@@ -60,9 +60,9 @@ class LoanApplication(Base):
 class LoanPredictionResult(Base):
     __table_name___ = 'LoanPredictionResult'
 
-    probability_of_default = Column(Float, Index=True, nullable=False)
-    prediction = Column(Boolean, Index=True, nullable=False)
-    Risk_level= Column(String, Index=True, nullable=False)
+    probability_of_default = Column(Float, index=True, nullable=False)
+    prediction = Column(Boolean, index=True, nullable=False)
+    Risk_level= Column(String, index=True, nullable=False)
 
 
 
