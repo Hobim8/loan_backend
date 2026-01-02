@@ -39,7 +39,7 @@ class UserCreate(Base):
     hashed_password = Column (String, nullable=False)
     is_active = Column (Boolean, default=False)
     is_staff = Column (Boolean, default=False)
-    loans = relationship('LoanApplication',back_populates='UserCreate')
+    loans = relationship('LoanApplication',back_populates='user')
 
 class LoanApplication(Base):
     __tablename__ = 'LoanRecords'
@@ -57,7 +57,9 @@ class LoanApplication(Base):
     has_Dependents = Column (Boolean, index=True, nullable=False)
     purpose_of_Loan = Column (SAEnum(purpose_of_Loan), nullable=False, index=True)
     has_Guarantor = Column(Boolean, index=True, nullable=False)
-    users = relationship('UserCreate',back_populates='LoanApplication')
+    users = relationship('UserCreate',back_populates='Loans')
+    predictions = relationship('LoanPredictionResult', back_populates='loan')
+
 
 class LoanPredictionResult(Base):
     __tablename__ = 'LoanPredictionResult'
@@ -66,6 +68,7 @@ class LoanPredictionResult(Base):
     probability_of_default = Column(Float, index=True, nullable=False)
     prediction = Column(Boolean, index=True, nullable=False)
     Risk_level= Column(String, index=True, nullable=False)
+    loan = relationship('LoanApplication', back_populates='predictions')
 
 
 
