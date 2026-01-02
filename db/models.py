@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime, Boolean 
 from sqlalchemy.orm  import relationship  
-from datetime import datetime
 from db.session import Base  
 from sqlalchemy import Enum as SAEnum
 from enum import Enum
@@ -39,7 +38,7 @@ class UserCreate(Base):
     hashed_password = Column (String, nullable=False)
     is_active = Column (Boolean, default=False)
     is_staff = Column (Boolean, default=False)
-    loans = relationship('LoanApplication',back_populates='user')
+    loans = relationship('LoanApplication',back_populates='User')
 
 class LoanApplication(Base):
     __tablename__ = 'LoanRecords'
@@ -58,7 +57,7 @@ class LoanApplication(Base):
     purpose_of_Loan = Column (SAEnum(purpose_of_Loan), nullable=False, index=True)
     has_Guarantor = Column(Boolean, index=True, nullable=False)
     users = relationship('UserCreate',back_populates='Loans')
-    predictions = relationship('LoanPredictionResult', back_populates='loan')
+    predictions = relationship('LoanPredictionResult', back_populates='loans')
 
 
 class LoanPredictionResult(Base):
