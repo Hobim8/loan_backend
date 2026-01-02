@@ -45,7 +45,7 @@ class LoanApplication(Base):
     __tablename__ = 'LoanRecords'
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column (Integer, ForeignKey('User.id'), nullable = False, index=True)
+    user_id = Column (Integer, ForeignKey('Users.id'), nullable = False, index=True)
     age = Column (Integer, index=True, nullable=False)
     annual_Income = Column (String, index=True, nullable=False)
     loan_Amount = Column(Integer, index=True, nullable=False)
