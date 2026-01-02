@@ -60,8 +60,9 @@ class LoanApplication(Base):
     users = relationship('UserCreate',back_populates='LoanApplication')
 
 class LoanPredictionResult(Base):
-    __table_name___ = 'LoanPredictionResult'
-
+    __tablename__ = 'LoanPredictionResult'
+    id = Column(Integer, primary_key=True, nullable=False, index=True)
+    Loan_id = Column(Integer, ForeignKey('LoanRecords.id'), index=True, nullable=False)
     probability_of_default = Column(Float, index=True, nullable=False)
     prediction = Column(Boolean, index=True, nullable=False)
     Risk_level= Column(String, index=True, nullable=False)

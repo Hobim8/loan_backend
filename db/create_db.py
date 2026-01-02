@@ -1,5 +1,5 @@
 from db.session import Base, engine
-import db.models
+from db.models import UserCreate, LoanApplication, LoanPredictionResult
 
 def init_db():
     print('...connecting to database')
