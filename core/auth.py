@@ -1,31 +1,28 @@
-from fastapi import APIRouter, status
-from db.session import Session, engine
-from schemas.user import UserCreate
-from db.models import UserCreate
-from fastapi import HTTPException
+from fastapi import APIRouter, status, HTTPException, Depends
+from db.session import engine, get_db
+from schemas.user import UserCreate as UserCreateSchema 
+from db.models import UserCreate as UserModel  
+from sqlalchemy.orm import Session 
 
 auth_router = APIRouter(
     prefix = '/auth',
     tags=['auth']
 )
 
-Session = Session(bind=engine)
 
 @auth_router.post('/Signup')
-async def Signup (user:UserCreate):
-    db_email = Session.query(UserCreate).filter(UserCreate.email == user.email).first()
-
-    if db_email is not None:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-        detail="User already exists"
-        )
-
-
-    db_username = Session.query(UserCreate).filter(UserCreate.username == user.username).first()
+def Signup (user:UserCreateSchema,
+            db: Session = Depends(get_db)):
     
-    if db_username is not None:
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-        detail="User already exists"
-        )
+ if db.query(UserModel).filter(UserModel.email == user.email).first():
+    raise HTTPException(status_code=400, detail='Email already exists')
 
+ if db.query(UserModel).filter(UserModel.username == user.username).first():
+    raise HTTPException(status_code=400, detail='username already exists')
+ 
+ new_user = UserModel(**user.model_dump())
+ db.add(new_user)
+ db.commit()
+ db.refresh(new_user)
 
+ return{'message': 'User created successfully'}
