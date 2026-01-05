@@ -11,7 +11,9 @@ class UserCreate(BaseModel):
     is_staff: Optional[bool]
 
     
-
+class UserLogin(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50, description='username required')
+    password_hased: str = Field(...,min_length=8, description= 'Password required')
     
 
 

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status, HTTPException, Depends
 from db.session import engine, get_db
 from schemas.user import UserCreate as UserCreateSchema 
+from schemas.user import UserLogin
 from db.models import UserCreate as UserModel  
 from sqlalchemy.orm import Session 
 
@@ -26,3 +27,21 @@ def Signup (user:UserCreateSchema,
  db.refresh(new_user)
 
  return{'message': 'User created successfully'}
+
+
+
+@auth_router.post('/Login')
+def Login (user:UserLogin,
+           db:Session = Depends(get_db)):
+  
+  db_user = db.query(UserModel).filter(UserModel.username == user.username).first()
+
+  if not db_user:
+    raise HTTPException(status_code=401, detail='invaild credentials')
+  
+  if db_user.hashed_password != user.password:
+    raise HTTPException(status_code=401, detail='invaild credentials')
+  
+  return{'message':'Login Successful'}
+
+
