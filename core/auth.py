@@ -4,6 +4,7 @@ from schemas.user import UserCreate as UserCreateSchema
 from schemas.user import UserLogin
 from db.models import UserCreate as UserModel  
 from sqlalchemy.orm import Session 
+from core.jwt import create_access_token
 
 auth_router = APIRouter(
     prefix = '/auth',
@@ -42,6 +43,17 @@ def Login (user:UserLogin,
   if db_user.hashed_password != user.password:
     raise HTTPException(status_code=401, detail='invaild credentials')
   
-  return{'message':'Login Successful'}
+  
+  access_token = create_access_token(
+    data={
+      'sub': db_user.username,
+      'user_id' : db_user.id 
+    }
+  )
+
+  return{
+    'access_token' : access_token,
+    'token_type' : 'bearer'
+  }
 
 
