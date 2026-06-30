@@ -1,0 +1,11 @@
+python-dotenv 
+fastapi
+python-jose
+passlib 
+sqlalchemy  
+joblib
+pandas  
+pydantic 
+uvicorn 
+bcrypt
+psycopg2-binary

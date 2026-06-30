@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional 
-from datetime import datetime 
+
 
 class UserCreate(BaseModel):
     id: Optional[int]
