@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "bcrypt>=5.0.0",
+    "bcrypt==4.0.1",
     "catboost>=1.2.10",
     "email-validator>=2.3.0",
     "fastapi>=0.138.1",
