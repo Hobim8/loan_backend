@@ -1,27 +1,24 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator
-from typing import Optional 
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional
 
 
-class User(BaseModel):
-    id: Optional[int]
-    username: str = Field(..., min_length=3, max_length=50, description='username required')
-    email: EmailStr = Field(..., description='valid email address')
-    password_hased: str = Field(..., min_length=8, description='Password(min 8 characters)')
-    is_active: Optional[bool]
-    is_staff: Optional[bool]
-
-    
-class Login(BaseModel):
-    username: str = Field(..., min_length=3, max_length=50, description='username required')
-    password_hased: str = Field(...,min_length=8, description= 'Password required')
+class UserCreate(BaseModel):
+    username: str = Field(
+        ..., min_length=3, max_length=50, description="username required"
+    )
+    email: EmailStr = Field(
+        ..., description="valid email address"
+    )
+    password: str = Field(
+        ..., min_length=8, description="Password(min 8 characters)"
+    )
     
 
 
-    
-
-
-
-
-
-
-
+class UserLogin(BaseModel):
+    username: str = Field(
+        ..., min_length=3, max_length=50, description="username required"
+    )
+    password: str = Field(
+        ..., min_length=8, description="Password required"
+    )
