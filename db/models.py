@@ -64,7 +64,7 @@ class LoanApplication(Base):
     purpose_of_Loan = Column(SAEnum(purpose_of_Loan), nullable=False, index=True)
     has_Guarantor = Column(Boolean, index=True, nullable=False)
     users = relationship("User", back_populates="loans")
-    predictions = relationship("LoanPredictionResult", back_populates="loans")
+    predictions = relationship("LoanPredictionResult", back_populates="loan")
 
 
 class LoanPredictionResult(Base):
