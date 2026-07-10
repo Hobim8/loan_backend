@@ -1,21 +1,21 @@
 from ML.engine import predict_default 
 
 
-result = predict_default({  
-    'Age': 30,
-    'Annual_Income': 500000,
-    'Loan_Amount': 100000,
-    'Credit_Score': 650,
-    'Months_Employed': 24,
-    'Interest_Rate': 5.5,
-    'Loan_Term': 12,
-    'Debt_to_Income_Ratio': 0.3,
-    'Education_Level': "Bachelor's",
-    'Type_of_Employment': 'Full-time',
-    'Marital_Status': 'Single',
-    'Has_Guarantor': 'Yes',
-    'Has_Dependents': 'No',
-    'Purpose_of_Loan': 'Auto'
-})  
+result = predict_default({
+    'age': 30,
+    'annual_Income': 500000,
+    'loan_Amount': 100000,
+    'credit_score': 650,
+    'months_employed': 24,
+    'interest_rate': 5.5,
+    'loan_term': 12,
+    'debt_to_income_ratio': 0.3,
+    'education_Level': "Bachelor's",
+    'type_of_Employment': 'Full-time',
+    'marital_Status': 'Single',
+    'has_Guarantor': 'Yes',
+    'has_Dependents': 'No',
+    'purpose_of_Loan': 'Auto'
+}) 
 
 print(result)

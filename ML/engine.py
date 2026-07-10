@@ -33,20 +33,20 @@ def preprocess(input_data: dict) -> pd.DataFrame:
     df = pd.DataFrame([input_data])
 
     rename_map = {
-        "Age": "Age",
-        "Annual_Income": "Annual Income (₦)",
-        "Loan_Amount": "Loan Amount (₦)",
-        "Credit_Score": "Credit Score",
-        "Months_Employed": "Months Employed",
-        "Interest_Rate": "Interest Rate (%)",
-        "Loan_Term": "Loan Term (Months)",
-        "Debt_to_Income_Ratio": "Debt-to-Income Ratio",
-        "Education_Level": "Education Level",
-        "Type_of_Employment": "Type of Employment",
-        "Marital_Status": "Marital Status",
-        "Has_Guarantor": "Has Guarantor?",
-        "Has_Dependents": "Has Dependents?",
-        "Purpose_of_Loan": "Purpose of Loan",
+        "age": "Age",
+        "annual_Income": "Annual Income (₦)",
+        "loan_Amount": "Loan Amount (₦)",
+        "credit_score": "Credit Score",
+        "months_employed": "Months Employed",
+        "interest_rate": "Interest Rate (%)",
+        "loan_term": "Loan Term (Months)",
+        "debt_to_income_ratio": "Debt-to-Income Ratio",
+        "education_Level": "Education Level",
+        "type_of_Employment": "Type of Employment",
+        "marital_Status": "Marital Status",
+        "has_Guarantor": "Has Guarantor?",
+        "has_Dependents": "Has Dependents?",
+        "purpose_of_Loan": "Purpose of Loan",
     }
 
     df = df.rename(columns=rename_map)
@@ -65,9 +65,19 @@ def predict_default(input_data: dict) -> dict:
     probability = model.predict_proba(processed_df)[:, 1][0]
     risk_flag = int(probability >= THRESHOLD)
 
+    if probability < 0.4:
+        risk_level = "Low"
+    elif probability < 0.7:
+        risk_level = "Medium"
+    else:
+        risk_level = "High"
+    
     return {
         "default_probability": round(float(probability), 4),
         "threshold": THRESHOLD,
         "prediction": "Likely to Default" if risk_flag else "Not Likely to Default",
         "risk_flag": risk_flag,
+        "risk_level": risk_level 
     }
+
+

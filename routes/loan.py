@@ -32,7 +32,7 @@ def predict(
         default_probability=predicted["default_probability"],
         prediction=predicted["prediction"],
         risk_level=predicted["risk_level"],
-        risk_flag=predicted["risk_flag"],
+        Risk_flag=predicted["risk_flag"],
     )
     db.add(predictionRecord)
     db.commit()
