@@ -28,10 +28,10 @@ def predict(
     predicted = predict_default(LoanInfo)
 
     predictionRecord = LoanPredictionResultModel(
-        loan_id=loan_record.id,
-        default_probability=predicted["default_probability"],
+        Loan_id=loan_record.id,
+        probability_of_default=predicted["default_probability"],
         prediction=predicted["prediction"],
-        risk_level=predicted["risk_level"],
+        Risk_level=predicted["risk_level"],
         Risk_flag=predicted["risk_flag"],
     )
     db.add(predictionRecord)

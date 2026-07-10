@@ -75,4 +75,5 @@ class LoanPredictionResult(Base):
     probability_of_default = Column(Float, index=True, nullable=False)
     prediction = Column(String, index=True, nullable=False)
     Risk_level = Column(String, index=True, nullable=False)
+    Risk_flag = Column(Integer, index=True, nullable=False)
     loan = relationship("LoanApplication", back_populates="predictions")
