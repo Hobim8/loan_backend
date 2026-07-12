@@ -1,14 +1,25 @@
+import io
+import os
+from dotenv import load_dotenv
 import joblib
 import pandas as pd
-from pathlib import Path
+from supabase import create_client
 
-BASE_DIR = Path(__file__).parent
+load_dotenv()
 
-model = joblib.load(BASE_DIR / "loan_risk_default_model.pkl")
-encoder = joblib.load(BASE_DIR / "label_encoders.pkl")
+supabase_url = os.getenv("SUPABASE_URL")
+supabase_key = os.getenv("SUPABASE_KEY")
 
-with open(BASE_DIR / "final_threshold.txt", "r") as f:
-    THRESHOLD = float(f.read())
+supabase = create_client(supabase_url, supabase_key)
+
+model_bytes = supabase.storage.from_("loan risk default model").download("loan_risk_default_model.pkl")
+model = joblib.load(io.BytesIO(model_bytes))
+
+encoder_bytes = supabase.storage.from_("loan risk default model").download("label_encoders.pkl")
+encoder = joblib.load(io.BytesIO(encoder_bytes))
+
+threshold_bytes = supabase.storage.from_("loan risk default model").download("final_threshold.txt")
+THRESHOLD = float(threshold_bytes.decode("utf-8")) 
 
 
 FEATURE_ORDER = [
