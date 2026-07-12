@@ -17,6 +17,7 @@ dependencies = [
     "python-dotenv>=1.2.2",
     "python-jose>=3.5.0",
     "python-multipart>=0.0.32",
+    "resend>=2.32.2",
     "scikit-learn==1.6.1",
     "sqlalchemy>=2.0.51",
     "supabase",

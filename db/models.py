@@ -1,8 +1,9 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, Boolean, DateTime
 from sqlalchemy.orm import relationship
 from db.session import Base
 from sqlalchemy import Enum as SAEnum
 from enum import Enum
+from datetime import datetime 
 
 
 class EducationLevel(Enum):
@@ -77,3 +78,13 @@ class LoanPredictionResult(Base):
     Risk_level = Column(String, index=True, nullable=False)
     Risk_flag = Column(Integer, index=True, nullable=False)
     loan = relationship("LoanApplication", back_populates="predictions")
+
+
+class EmailVerification(Base):
+    __tablename__ = "EmailVerification"
+
+    id = Column(Integer, primary_key=True, nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("Users.id"), index=True, nullable=False)
+    code = Column(String, nullable=False, index=True)
+    expires_at = Column(DateTime, nullable=False, index=True)
+    is_used = Column(Boolean, nullable=False, index=True)
