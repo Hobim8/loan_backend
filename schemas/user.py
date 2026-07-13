@@ -22,3 +22,9 @@ class UserLogin(BaseModel):
     password: str = Field(
         ..., min_length=8, description="Password required"
     )
+
+
+class verifyEmail(BaseModel):
+    email: EmailStr = Field(..., description="user email address")
+    code: str = Field(..., description="verification code")
+

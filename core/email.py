@@ -39,3 +39,5 @@ def save_verification_code(db: Session, user_id: int, code: str):
     db.add(verification_entry)
     db.commit()
     db.refresh(verification_entry)
+
+

@@ -1,12 +1,15 @@
-from fastapi import APIRouter, status, HTTPException, Depends
+from fastapi import APIRouter,  HTTPException, Depends
 from db.session import get_db
-from schemas.user import UserCreate, UserLogin
+from schemas.user import UserCreate, verifyEmail 
+from core.email import generate_verification_code, send_verification_code, save_verification_code
 from db.models import User as UserModel
+from db.models import EmailVerification as EmailVerificationModel
 from sqlalchemy.orm import Session
 from core.jwt import create_access_token
 from core.security import hash_password
 from core.security import verify_password
 from fastapi.security import OAuth2PasswordRequestForm
+from datetime import datetime, timedelta
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -29,8 +32,14 @@ def Signup(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    return {"message": "User created successfully"}
+    generate_code = generate_verification_code()
+    send_verification_code(user.email, generate_code)
+    save_verification_code(db, new_user.id, generate_code)
 
+
+    return {"message": "User created successfully. Please check your email to verify your account."}
+
+    
 
 @auth_router.post("/Login")
 def Login(
@@ -51,3 +60,34 @@ def Login(
         data={"sub": db_user.username, "user_id": db_user.id}
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@auth_router.post("/verify-email")
+def verify(code: str, email: str, db: Session = Depends(get_db)):
+    user = db.query(UserModel).filter(UserModel.email == email).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    verification_entry = (
+        db.query(EmailVerificationModel).filter(
+            EmailVerificationModel.user_id == user.id,
+            EmailVerificationModel.code == code,
+            EmailVerificationModel.is_used == False,
+            EmailVerificationModel.expires_at > datetime.utcnow(),
+    )).first() 
+    
+    if not verification_entry:
+        raise HTTPException(status_code=400, detail="Invaild or expired verification code")
+    
+    if verification_entry.is_used:
+        raise HTTPException(status_code=400, detail="verification code has already been used")
+    
+    user.is_active = True
+    verification_entry.is_used = True
+    db.commit()
+
+    return {"message": "Email verified successfully."}
+
+
+    
