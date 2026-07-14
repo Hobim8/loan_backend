@@ -1,4 +1,5 @@
 import os
+import logging
 import resend
 from db.models import EmailVerification as EmailVerificationModel
 from sqlalchemy.orm import Session
@@ -7,6 +8,8 @@ import secrets
 from datetime import datetime, timedelta
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 
 def generate_verification_code():
@@ -19,14 +22,18 @@ def generate_verification_code():
 def send_verification_code(email: str, code: str):
     resend.api_key = os.getenv("RESEND_API_KEY")
 
-    resend.Emails.send(
-        {
-            "from": "onboarding@resend.dev",
-            "to": email,
-            "subject": "Verify your email",
-            "html": f"<p>Your verification code is: <strong>{code}</strong></p>",
-        }
-    )
+    try:
+        resend.Emails.send(
+            {
+                "from": "onboarding@resend.dev",
+                "to": email,
+                "subject": "Verify your email",
+                "html": f"<p>Your verification code is: <strong>{code}</strong></p>",
+            }
+        )
+    except Exception:
+        logger.exception("Failed to send verification email to %s", email)
+        raise
 
 
 def save_verification_code(db: Session, user_id: int, code: str):

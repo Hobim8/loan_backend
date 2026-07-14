@@ -1,6 +1,6 @@
-from fastapi import APIRouter,  HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from db.session import get_db
-from schemas.user import UserCreate, verifyEmail 
+from schemas.user import UserCreate, verifyEmail
 from core.email import generate_verification_code, send_verification_code, save_verification_code
 from db.models import User as UserModel
 from db.models import EmailVerification as EmailVerificationModel
@@ -15,7 +15,11 @@ auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @auth_router.post("/Signup")
-def Signup(user: UserCreate, db: Session = Depends(get_db)):
+def Signup(
+    user: UserCreate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     if db.query(UserModel).filter(UserModel.email == user.email).first():
         raise HTTPException(status_code=400, detail="Email already exists")
 
@@ -33,11 +37,12 @@ def Signup(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
 
     generate_code = generate_verification_code()
-    send_verification_code(user.email, generate_code)
     save_verification_code(db, new_user.id, generate_code)
+    background_tasks.add_task(send_verification_code, user.email, generate_code)
 
-
-    return {"message": "User created successfully. Please check your email to verify your account."}
+    return {
+        "message": "User created successfully. Please check your email to verify your account."
+    }
 
     
 
