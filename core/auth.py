@@ -50,6 +50,9 @@ def Login(
         db.query(UserModel).filter(UserModel.username == form_data.username).first()
     )
 
+    if not db_user.is_active:
+        raise HTTPException(status_code=403, detail="Please verify your email before logging in")
+    
     if not db_user:
         raise HTTPException(status_code=401, detail="invaild credentials")
 
@@ -63,8 +66,8 @@ def Login(
 
 
 @auth_router.post("/verify-email")
-def verify(code: str, email: str, db: Session = Depends(get_db)):
-    user = db.query(UserModel).filter(UserModel.email == email).first()
+def verify(data: verifyEmail, db: Session = Depends(get_db)):
+    user = db.query(UserModel).filter(UserModel.email == data.email).first()
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -72,7 +75,7 @@ def verify(code: str, email: str, db: Session = Depends(get_db)):
     verification_entry = (
         db.query(EmailVerificationModel).filter(
             EmailVerificationModel.user_id == user.id,
-            EmailVerificationModel.code == code,
+            EmailVerificationModel.code == data.code,
             EmailVerificationModel.is_used == False,
             EmailVerificationModel.expires_at > datetime.utcnow(),
     )).first() 
