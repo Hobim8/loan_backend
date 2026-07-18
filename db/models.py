@@ -64,8 +64,12 @@ class LoanApplication(Base):
     has_Dependents = Column(String, index=True, nullable=False)
     purpose_of_Loan = Column(String, nullable=False, index=True)
     has_Guarantor = Column(String, index=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
     users = relationship("User", back_populates="loans")
     predictions = relationship("LoanPredictionResult", back_populates="loan")
+    outcome = relationship(
+        "LoanOutcome", back_populates="loan", uselist=False, cascade="all, delete-orphan"
+    )
 
 
 class LoanPredictionResult(Base):
@@ -77,7 +81,28 @@ class LoanPredictionResult(Base):
     prediction = Column(String, index=True, nullable=False)
     Risk_level = Column(String, index=True, nullable=False)
     Risk_flag = Column(Integer, index=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    latency_ms = Column(Float, nullable=True)
+    model_version = Column(String, nullable=True, index=True)
+    threshold_used = Column(Float, nullable=True)
+    status = Column(String, default="success", nullable=False, index=True)
+    error_message = Column(String, nullable=True)
     loan = relationship("LoanApplication", back_populates="predictions")
+
+
+class LoanOutcome(Base):
+    
+    __tablename__ = "LoanOutcomes"
+
+    id = Column(Integer, primary_key=True, nullable=False, index=True)
+    loan_id = Column(
+        Integer, ForeignKey("LoanRecords.id"), unique=True, nullable=False, index=True
+    )
+    defaulted = Column(Boolean, nullable=False, index=True)
+    recorded_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    recorded_by_user_id = Column(Integer, ForeignKey("Users.id"), nullable=True)
+    notes = Column(String, nullable=True)
+    loan = relationship("LoanApplication", back_populates="outcome")
 
 
 class EmailVerification(Base):

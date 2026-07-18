@@ -37,3 +37,10 @@ def get_current_user(
         raise HTTPException(status_code=401, detail="invaild or expired token")
 
     return get_user
+
+
+def get_current_staff_user(current_user: User = Depends(get_current_user)) -> User:
+    """Require an authenticated user with is_staff=True (monitoring / admin)."""
+    if not current_user.is_staff:
+        raise HTTPException(status_code=403, detail="Staff access required")
+    return current_user
