@@ -98,7 +98,7 @@ def _apply_password_reset(
         .filter(
             EmailVerificationModel.user_id == user.id,
             EmailVerificationModel.code == token,
-            EmailVerificationModel.is_used == False,  # noqa: E712
+            EmailVerificationModel.is_used == False,  
             EmailVerificationModel.expires_at > datetime.utcnow(),
         )
         .first()
@@ -111,13 +111,14 @@ def _apply_password_reset(
 
     user.hashed_password = hash_password(new_password)
     entry.is_used = True
+    user.is_active = True
 
-    # Invalidate any other unused codes for this user (verify + prior resets)
+    
     (
         db.query(EmailVerificationModel)
         .filter(
             EmailVerificationModel.user_id == user.id,
-            EmailVerificationModel.is_used == False,  # noqa: E712
+            EmailVerificationModel.is_used == False,  
             EmailVerificationModel.id != entry.id,
         )
         .update({EmailVerificationModel.is_used: True}, synchronize_session=False)

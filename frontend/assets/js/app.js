@@ -294,11 +294,14 @@ function authPanel(tab, { resetToken = "", resetEmail = "" } = {}) {
         <div class="field full btn-row"><button class="btn btn-primary" type="submit">Send reset instructions</button></div>
       </form>
       <hr style="border:0;border-top:1px solid var(--line);margin:1.25rem 0" />
-      <p class="muted" style="margin-top:0;font-size:.9rem">Already have a reset link? Enter the details below to choose a new password.</p>
+      <p class="muted" style="margin-top:0;font-size:.9rem">
+        Already have a reset link? Enter the details from that email to choose a new password.
+        This is not the signup verification code.
+      </p>
       <form id="form-reset" class="form-grid">
         <div class="field full"><label>Email</label><input name="email" type="email" required value="${escapeAttr(resetEmail)}" autocomplete="email" /></div>
-        <div class="field full"><label>Reset code</label><input name="token" required value="${escapeAttr(resetToken)}" autocomplete="one-time-code" />
-          <span class="hint">From the password reset email we sent you.</span></div>
+        <div class="field full"><label>Reset token</label><input name="token" required value="${escapeAttr(resetToken)}" autocomplete="off" />
+          <span class="hint">Long token from the password-reset email (not the 6-digit signup code).</span></div>
         ${passwordFieldHtml({
           name: "new_password",
           label: "New password",
