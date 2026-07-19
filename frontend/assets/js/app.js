@@ -198,6 +198,27 @@ function viewHome() {
   `;
 }
 
+function passwordFieldHtml({
+  name,
+  label = "Password",
+  autocomplete = "current-password",
+  minlength = null,
+  required = true,
+  hint = "",
+}) {
+  const minAttr = minlength != null ? ` minlength="${minlength}"` : "";
+  const reqAttr = required ? " required" : "";
+  return `
+    <div class="field full">
+      <label>${escapeHtml(label)}</label>
+      <div class="password-field">
+        <input name="${escapeAttr(name)}" type="password"${minAttr}${reqAttr} autocomplete="${escapeAttr(autocomplete)}" />
+        <button type="button" class="toggle-password" data-toggle-password aria-label="Show password" title="Show password">Show</button>
+      </div>
+      ${hint ? `<span class="hint">${escapeHtml(hint)}</span>` : ""}
+    </div>`;
+}
+
 function viewAuth() {
   const params = new URLSearchParams(location.hash.split("?")[1] || "");
   const tab = params.get("tab") || "login";
@@ -211,14 +232,14 @@ function viewAuth() {
           <p class="page-kicker">Officer access</p>
           <h2>Secure the desk before you score paper.</h2>
           <p class="muted">
-            Sign in with username <em>or</em> email. New accounts verify by email code
-            (printed in the API terminal when console email mode is on).
+            Sign in with your username or email. New accounts must verify their email
+            before accessing the assessment desk.
           </p>
         </div>
         <div class="stat-strip">
-          <div class="stat-chip"><strong>JWT</strong><span>Session</span></div>
-          <div class="stat-chip"><strong>OTP</strong><span>Verify</span></div>
-          <div class="stat-chip"><strong>Staff</strong><span>Monitor</span></div>
+          <div class="stat-chip"><strong>Secure</strong><span>Sign-in</span></div>
+          <div class="stat-chip"><strong>Verified</strong><span>Email</span></div>
+          <div class="stat-chip"><strong>Protected</strong><span>Desk</span></div>
         </div>
       </aside>
 
@@ -245,8 +266,13 @@ function authPanel(tab, { resetToken = "", resetEmail = "" } = {}) {
       <form id="form-signup" class="form-grid">
         <div class="field"><label>Username</label><input name="username" minlength="3" required autocomplete="username" /></div>
         <div class="field"><label>Email</label><input name="email" type="email" required autocomplete="email" /></div>
-        <div class="field full"><label>Password</label><input name="password" type="password" minlength="8" required autocomplete="new-password" />
-          <span class="hint">Minimum 8 characters</span></div>
+        ${passwordFieldHtml({
+          name: "password",
+          label: "Password",
+          autocomplete: "new-password",
+          minlength: 8,
+          hint: "Minimum 8 characters",
+        })}
         <div class="field full btn-row" style="margin-top:.25rem">
           <button class="btn btn-primary" type="submit">Create account</button>
         </div>
@@ -255,24 +281,31 @@ function authPanel(tab, { resetToken = "", resetEmail = "" } = {}) {
   if (tab === "verify") {
     return `
       <form id="form-verify" class="form-grid">
-        <div class="field full"><label>Email</label><input name="email" type="email" required /></div>
-        <div class="field full"><label>Verification code</label><input name="code" required placeholder="6-digit code" />
-          <span class="hint">From email, or API terminal if EMAIL_BACKEND=console</span></div>
+        <div class="field full"><label>Email</label><input name="email" type="email" required autocomplete="email" /></div>
+        <div class="field full"><label>Verification code</label><input name="code" required placeholder="Enter the code from your email" autocomplete="one-time-code" />
+          <span class="hint">Check your inbox for the verification code we sent you.</span></div>
         <div class="field full btn-row"><button class="btn btn-primary" type="submit">Verify account</button></div>
       </form>`;
   }
   if (tab === "forgot") {
     return `
       <form id="form-forgot" class="form-grid">
-        <div class="field full"><label>Account email</label><input name="email" type="email" required value="${escapeAttr(resetEmail)}" /></div>
+        <div class="field full"><label>Account email</label><input name="email" type="email" required value="${escapeAttr(resetEmail)}" autocomplete="email" /></div>
         <div class="field full btn-row"><button class="btn btn-primary" type="submit">Send reset instructions</button></div>
       </form>
       <hr style="border:0;border-top:1px solid var(--line);margin:1.25rem 0" />
-      <p class="muted" style="margin-top:0;font-size:.9rem">Already have a token? Set a new password:</p>
+      <p class="muted" style="margin-top:0;font-size:.9rem">Already have a reset link? Enter the details below to choose a new password.</p>
       <form id="form-reset" class="form-grid">
-        <div class="field full"><label>Email</label><input name="email" type="email" required value="${escapeAttr(resetEmail)}" /></div>
-        <div class="field full"><label>Reset token</label><input name="token" required value="${escapeAttr(resetToken)}" /></div>
-        <div class="field full"><label>New password</label><input name="new_password" type="password" minlength="8" required /></div>
+        <div class="field full"><label>Email</label><input name="email" type="email" required value="${escapeAttr(resetEmail)}" autocomplete="email" /></div>
+        <div class="field full"><label>Reset code</label><input name="token" required value="${escapeAttr(resetToken)}" autocomplete="one-time-code" />
+          <span class="hint">From the password reset email we sent you.</span></div>
+        ${passwordFieldHtml({
+          name: "new_password",
+          label: "New password",
+          autocomplete: "new-password",
+          minlength: 8,
+          hint: "Minimum 8 characters",
+        })}
         <div class="field full btn-row"><button class="btn btn-primary" type="submit">Update password</button></div>
       </form>`;
   }
@@ -280,12 +313,13 @@ function authPanel(tab, { resetToken = "", resetEmail = "" } = {}) {
     <form id="form-login" class="form-grid">
       <div class="field full">
         <label>Username or email</label>
-        <input name="identifier" required autocomplete="username" placeholder="officer or name@bank.com" />
+        <input name="identifier" required autocomplete="username" placeholder="you@company.com" />
       </div>
-      <div class="field full">
-        <label>Password</label>
-        <input name="password" type="password" required autocomplete="current-password" />
-      </div>
+      ${passwordFieldHtml({
+        name: "password",
+        label: "Password",
+        autocomplete: "current-password",
+      })}
       <div class="field full btn-row">
         <button class="btn btn-primary" type="submit">Sign in to desk</button>
         <button class="btn btn-ghost" type="button" data-auth-tab="forgot">Forgot password</button>
@@ -467,17 +501,17 @@ function viewMonitor() {
   if (!isLoggedIn()) {
     return `
       <div class="panel">
-        <h2>Staff access required</h2>
-        <p class="muted">Sign in with a staff account to view model operations.</p>
+        <h2>Sign in required</h2>
+        <p class="muted">Please sign in to view model operations.</p>
         <div class="btn-row"><a class="btn btn-primary" href="#/auth">Sign in</a></div>
       </div>`;
   }
 
   return `
-    <p class="page-kicker">Model operations · Staff</p>
+    <p class="page-kicker">Model operations</p>
     <h1>Model desk</h1>
     <p class="lede">
-      Live health, score volume, risk mix, and recent predictions. Requires <span class="mono">is_staff = true</span> on your user.
+      Live health, score volume, risk mix, and recent predictions for authorized officers.
     </p>
     <div id="monitor-root">
       <div class="panel">
@@ -496,11 +530,14 @@ function renderMonitorData({ health, summary, predictions, perfError, accessDeni
   if (accessDenied) {
     root.innerHTML = `
       <div class="panel">
-        <h2>Staff gate</h2>
-        <p class="alert info">
-          Your account is signed in but not marked staff. In Supabase SQL:
+        <h2>Access restricted</h2>
+        <p class="muted">
+          You are signed in, but this model desk is limited to authorized underwriting staff.
+          Please contact your administrator if you need access.
         </p>
-        <pre class="mono" style="background:rgba(0,0,0,.25);padding:1rem;border-radius:8px;overflow:auto">UPDATE "Users" SET is_staff = true WHERE email = 'you@example.com';</pre>
+        <div class="btn-row" style="margin-top:1rem">
+          <a class="btn btn-primary" href="#/assess">Back to assessment desk</a>
+        </div>
       </div>`;
     return;
   }
@@ -759,7 +796,24 @@ function showMsg(sel, text, type = "error") {
     : "";
 }
 
+function bindPasswordToggles() {
+  document.querySelectorAll("[data-toggle-password]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const wrap = btn.closest(".password-field");
+      const input = wrap?.querySelector("input");
+      if (!input) return;
+      const showing = input.type === "text";
+      input.type = showing ? "password" : "text";
+      btn.textContent = showing ? "Show" : "Hide";
+      btn.setAttribute("aria-label", showing ? "Show password" : "Hide password");
+      btn.title = showing ? "Show password" : "Hide password";
+    });
+  });
+}
+
 function bindAuth() {
+  bindPasswordToggles();
+
   document.querySelectorAll("[data-auth-tab]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const t = btn.getAttribute("data-auth-tab");
@@ -775,7 +829,7 @@ function bindAuth() {
     try {
       const data = await api.login(id, password);
       setSession(data.access_token, id);
-      showMsg("#auth-msg", "Signed in. Opening assessment desk…", "success");
+      showMsg("#auth-msg", "Signed in successfully. Opening the assessment desk…", "success");
       setTimeout(() => navigate("/assess"), 400);
     } catch (err) {
       showMsg("#auth-msg", err.message);
@@ -791,7 +845,12 @@ function bindAuth() {
         email: String(fd.get("email")).trim(),
         password: String(fd.get("password")),
       });
-      showMsg("#auth-msg", res.message || "Account created. Verify your email.", "success");
+      showMsg(
+        "#auth-msg",
+        res.message ||
+          "Account created. Please check your email for a verification code.",
+        "success"
+      );
       setTimeout(() => navigate("/auth?tab=verify"), 800);
     } catch (err) {
       showMsg("#auth-msg", err.message);
@@ -806,7 +865,11 @@ function bindAuth() {
         email: String(fd.get("email")).trim(),
         code: String(fd.get("code")).trim(),
       });
-      showMsg("#auth-msg", res.message || "Verified.", "success");
+      showMsg(
+        "#auth-msg",
+        res.message || "Email verified. You can sign in now.",
+        "success"
+      );
       setTimeout(() => navigate("/auth?tab=login"), 700);
     } catch (err) {
       showMsg("#auth-msg", err.message);
@@ -820,8 +883,8 @@ function bindAuth() {
       const res = await api.forgotPassword(String(fd.get("email")).trim());
       showMsg(
         "#auth-msg",
-        (res.message || "Sent.") +
-          " If EMAIL_BACKEND=console, copy the token from the API terminal.",
+        res.message ||
+          "If that email is registered, password reset instructions have been sent. Please check your inbox.",
         "success"
       );
     } catch (err) {
@@ -838,7 +901,11 @@ function bindAuth() {
         token: String(fd.get("token")).trim(),
         new_password: String(fd.get("new_password")),
       });
-      showMsg("#auth-msg", res.message || "Password updated.", "success");
+      showMsg(
+        "#auth-msg",
+        res.message || "Your password has been updated. You can sign in now.",
+        "success"
+      );
       setTimeout(() => navigate("/auth?tab=login"), 800);
     } catch (err) {
       showMsg("#auth-msg", err.message);

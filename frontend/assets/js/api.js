@@ -29,18 +29,64 @@ export function isLoggedIn() {
   return Boolean(getToken());
 }
 
+/** Map status codes / raw API text to user-facing copy (never leak stack traces or “500” noise). */
+function friendlyMessage(status, raw) {
+  const text = (raw || "").trim();
+  const lower = text.toLowerCase();
+
+  // Prefer clear backend messages when they already read well
+  if (text && !/^request failed/i.test(text) && !/internal server error/i.test(text)) {
+    // Soften common technical phrasing
+    if (lower.includes("staff access")) {
+      return "You do not have permission to view this area. Please contact your administrator.";
+    }
+    if (lower.includes("invaild") || lower.includes("invalid credentials")) {
+      return "Incorrect username or password. Please try again.";
+    }
+    if (lower.includes("invaild or expired") || lower.includes("invalid or expired token")) {
+      return "Your session has expired. Please sign in again.";
+    }
+    if (lower.includes("invaild or expired verification") || lower.includes("invalid or expired verification")) {
+      return "That verification code is invalid or has expired. Request a new code and try again.";
+    }
+    return text;
+  }
+
+  switch (status) {
+    case 400:
+      return "Please check your details and try again.";
+    case 401:
+      return "Incorrect username or password. Please try again.";
+    case 403:
+      return "You do not have permission to perform this action.";
+    case 404:
+      return "We could not find that account or resource.";
+    case 422:
+      return "Some fields are incomplete or invalid. Please review and try again.";
+    case 429:
+      return "Too many attempts. Please wait a moment and try again.";
+    case 500:
+    case 502:
+    case 503:
+    case 504:
+      return "Something went wrong on our side. Please try again in a moment.";
+    default:
+      return "Something went wrong. Please try again.";
+  }
+}
+
 async function parseError(res) {
-  let detail = `Request failed (${res.status})`;
+  let raw = "";
   try {
     const data = await res.json();
-    if (typeof data.detail === "string") detail = data.detail;
+    if (typeof data.detail === "string") raw = data.detail;
     else if (Array.isArray(data.detail))
-      detail = data.detail.map((d) => d.msg || JSON.stringify(d)).join("; ");
-    else if (data.message) detail = data.message;
+      raw = data.detail.map((d) => d.msg || d.loc?.join(".") || "Invalid field").join("; ");
+    else if (data.message) raw = data.message;
   } catch {
-    /* ignore */
+    /* ignore non-JSON bodies */
   }
-  const err = new Error(detail);
+  const err = new Error(friendlyMessage(res.status, raw));
   err.status = res.status;
   return err;
 }

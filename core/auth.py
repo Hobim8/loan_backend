@@ -88,7 +88,10 @@ def _apply_password_reset(
     """Validate token and set new password. Raises HTTPException on failure."""
     user = db.query(UserModel).filter(UserModel.email == email).first()
     if not user:
-        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+        raise HTTPException(
+            status_code=400,
+            detail="That reset link is invalid or has expired. Please request a new one.",
+        )
 
     entry = (
         db.query(EmailVerificationModel)
@@ -101,7 +104,10 @@ def _apply_password_reset(
         .first()
     )
     if not entry:
-        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+        raise HTTPException(
+            status_code=400,
+            detail="That reset link is invalid or has expired. Please request a new one.",
+        )
 
     user.hashed_password = hash_password(new_password)
     entry.is_used = True
@@ -127,10 +133,14 @@ def Signup(
     db: Session = Depends(get_db),
 ):
     if db.query(UserModel).filter(UserModel.email == user.email).first():
-        raise HTTPException(status_code=400, detail="Email already exists")
+        raise HTTPException(
+            status_code=400, detail="An account with this email already exists."
+        )
 
     if db.query(UserModel).filter(UserModel.username == user.username).first():
-        raise HTTPException(status_code=400, detail="username already exists")
+        raise HTTPException(
+            status_code=400, detail="This username is already taken."
+        )
 
     hashed = hash_password(user.password)
 
@@ -147,7 +157,7 @@ def Signup(
     background_tasks.add_task(send_verification_code, user.email, generate_code)
 
     return {
-        "message": "User created successfully. Please check your email to verify your account."
+        "message": "Account created. Please check your email for a verification code, then verify your account before signing in."
     }
 
 
@@ -172,11 +182,15 @@ def Login(
     )
 
     if not db_user or not verify_password(form_data.password, db_user.hashed_password):
-        raise HTTPException(status_code=401, detail="invaild credentials")
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password. Please try again.",
+        )
 
     if not db_user.is_active:
         raise HTTPException(
-            status_code=403, detail="Please verify your email before logging in"
+            status_code=403,
+            detail="Please verify your email before signing in.",
         )
 
     access_token = create_access_token(
@@ -190,7 +204,9 @@ def verify(data: verifyEmail, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.email == data.email).first()
 
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(
+            status_code=404, detail="No account was found for that email address."
+        )
 
     verification_entry = (
         db.query(EmailVerificationModel)
@@ -205,14 +221,15 @@ def verify(data: verifyEmail, db: Session = Depends(get_db)):
 
     if not verification_entry:
         raise HTTPException(
-            status_code=400, detail="Invaild or expired verification code"
+            status_code=400,
+            detail="That verification code is invalid or has expired. Please request a new code.",
         )
 
     user.is_active = True
     verification_entry.is_used = True
     db.commit()
 
-    return {"message": "Email verified successfully."}
+    return {"message": "Your email has been verified. You can sign in now."}
 
 
 @auth_router.post("/forgot-password")
@@ -226,7 +243,7 @@ def forgot_password(
     if not user:
         raise HTTPException(
             status_code=404,
-            detail="This email address does not exist",
+            detail="No account was found for that email address.",
         )
 
     token = generate_password_reset_token()
@@ -234,7 +251,7 @@ def forgot_password(
     background_tasks.add_task(send_password_reset_email, user.email, token)
 
     return {
-        "message": "Password reset instructions have been sent to this email address."
+        "message": "If that email is registered, password reset instructions have been sent. Please check your inbox.",
     }
 
 
@@ -247,7 +264,7 @@ def reset_password(body: ResetPasswordRequest, db: Session = Depends(get_db)):
         token=body.token,
         new_password=body.new_password,
     )
-    return {"message": "Password updated successfully. You can log in now."}
+    return {"message": "Your password has been updated. You can sign in now."}
 
 
 @auth_router.get("/reset-password-form", response_class=HTMLResponse)
@@ -299,7 +316,11 @@ def reset_password_form_submit(
             db, email=email, token=token, new_password=new_password
         )
     except HTTPException as exc:
-        detail = exc.detail if isinstance(exc.detail, str) else "Reset failed."
+        detail = (
+            exc.detail
+            if isinstance(exc.detail, str)
+            else "We could not reset your password. Please try again."
+        )
         return HTMLResponse(
             status_code=exc.status_code,
             content=_password_reset_form_html(
@@ -309,6 +330,6 @@ def reset_password_form_submit(
 
     return HTMLResponse(
         content=_password_reset_form_html(
-            message="Password updated successfully. You can log in at /docs.",
+            message="Your password has been updated. You can sign in now.",
         )
     )
