@@ -1,0 +1,32 @@
+# Git / IDE
+.git
+.gitignore
+.vscode
+.idea
+
+# Secrets — pass at runtime with -e / --env-file
+.env
+.env.*
+!.env.example
+
+# Python junk
+.venv
+venv
+__pycache__
+**/__pycache__
+*.py[cod]
+*.egg-info
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# Not needed in the image
+*.md
+test_*.py
+scripts/
+main.py
+requirement.txt
+
+# OS
+.DS_Store
+Thumbs.db
